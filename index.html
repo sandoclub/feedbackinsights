@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sando Club — Feedback Insights</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#141414;--bg2:#1e1e1e;--bg3:#252525;--bg4:#2e2e2e;
+  --text:#f0ece4;--text2:#9a9690;--text3:#6b6760;
+  --accent:#e07a5f;--accent2:#c96a4f;
+  --teal:#6b9080;--gold:#c9a84c;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --r:14px;--r-sm:8px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --serif:'Georgia',serif;
+}
+.light{
+  --bg:#f5f4f0;--bg2:#ffffff;--bg3:#eeece8;--bg4:#e5e3de;
+  --text:#1a1a1a;--text2:#6b6760;--text3:#9a9690;
+  --accent:#d4614a;--accent2:#b8513d;
+  --teal:#4a7a68;--gold:#a88a30;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .2s,color .2s}
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;gap:12px}
+.hdr-logo{font-family:var(--serif);font-size:18px;color:var(--text);white-space:nowrap;flex-shrink:0}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.ibtn{width:32px;height:32px;border-radius:var(--r-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.ibtn:hover{background:var(--bg3);color:var(--text)}
+.ibtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+/* VIEW TABS */
+.vtabs{display:flex;gap:0;background:var(--bg3);border-radius:var(--r-sm);padding:3px;border:0.5px solid var(--border)}
+.vtab{font-size:13px;padding:5px 18px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-family:var(--sans);transition:all .15s;white-space:nowrap}
+.vtab.on{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+/* SUBBAR */
+.subbar{display:flex;align-items:center;gap:10px;padding:10px 24px;border-bottom:0.5px solid var(--border);flex-wrap:wrap;min-height:48px}
+.mdrop{font-family:var(--sans);font-size:13px;background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);border-radius:var(--r-sm);padding:6px 12px;cursor:pointer;outline:none}
+.day-mode-tog{display:flex;gap:2px;background:var(--bg4);border-radius:6px;padding:2px}
+.dmbtn{font-size:12px;padding:4px 12px;border-radius:5px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.dmbtn.on{background:var(--accent);color:#fff}
+.date-input{background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r-sm);padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;cursor:pointer;color-scheme:dark}
+.light .date-input{color-scheme:light}
+.sep{font-size:13px;color:var(--text3)}
+.clear-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;transition:color .15s}
+.clear-btn:hover{color:var(--text)}
+.showing{font-size:12px;color:var(--text3);margin-left:auto}
+/* MAIN */
+.main{padding:20px 24px;max-width:1280px;margin:0 auto}
+/* METRIC CARDS */
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:860px){.mgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.mgrid{grid-template-columns:1fr}}
+.mc{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:20px 22px;display:flex;flex-direction:column;gap:10px;transition:background .2s}
+.mc-icon{width:38px;height:38px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center}
+.mc-icon svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.mc-lbl{font-size:11px;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.mc-val{font-family:var(--serif);font-size:38px;font-weight:400;color:var(--text);line-height:1;margin-top:2px}
+.mc-sub{font-size:12px;color:var(--text3)}
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 360px;gap:12px}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:24px;transition:background .2s}
+.ch{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px}
+.ci{width:42px;height:42px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ci svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.ct{font-family:var(--serif);font-size:21px;color:var(--text);line-height:1.2}
+.cs{font-size:12px;color:var(--text3);margin-top:2px}
+.slbl{font-size:11px;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+/* RIGHT */
+.rcol{display:flex;flex-direction:column;gap:12px}
+.rc{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:20px;transition:background .2s}
+.rc .ch{margin-bottom:12px}
+.dw{display:flex;justify-content:center;margin:4px 0 12px}
+.dcw{position:relative;width:160px;height:160px}
+.ll{display:flex;flex-direction:column;gap:6px}
+.lr{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.ll-l{display:flex;align-items:center;gap:7px;color:var(--text2)}
+.ld{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lp{color:var(--text2);font-variant-numeric:tabular-nums}
+/* TREND TOGGLES */
+.ttog{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.tbtn{font-size:12px;padding:4px 11px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.tbtn.on{border-color:var(--accent);color:var(--accent)}
+/* SETTINGS OVERLAY */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.ov.open{display:flex}
+.sp{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r);width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:28px;position:relative}
+.st{font-family:var(--serif);font-size:20px;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--text)}
+.st svg{width:19px;height:19px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.ss{background:var(--bg3);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.ss-t{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:7px}
+.ss-t svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2;flex-shrink:0}
+.ss-s{font-size:12px;color:var(--text3);margin-bottom:14px}
+.fl{font-size:12px;color:var(--text3);margin-bottom:5px}
+.fi{width:100%;background:var(--bg4);border:0.5px solid var(--border2);border-radius:var(--r-sm);padding:9px 12px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--accent)}
+.me{background:var(--bg4);border-radius:var(--r-sm);padding:14px;margin-bottom:8px;display:grid;grid-template-columns:1fr 90px 2fr 32px;gap:8px;align-items:end}
+.db{width:32px;height:34px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--r-sm);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;align-self:end}
+.db:hover{border-color:var(--accent);color:var(--accent)}
+.db svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+.amb{width:100%;padding:10px;background:transparent;border:0.5px dashed var(--border2);border-radius:var(--r-sm);color:var(--text3);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s}
+.amb:hover{border-color:var(--accent);color:var(--accent)}
+.svb{width:100%;padding:12px;background:var(--accent);border:none;border-radius:var(--r-sm);color:#fff;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.svb:hover{background:var(--accent2)}
+.svb svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2}
+.xbtn{position:absolute;top:14px;right:16px;background:transparent;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:4px}
+/* LOADING */
+.ldo{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .3s}
+.ldo.gone{opacity:0;pointer-events:none}
+.spin{width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldt{font-size:13px;color:var(--text3)}
+.empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px;line-height:1.7}
+
+.cmp-check{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:0.5px solid var(--border2);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;user-select:none}
+.cmp-check.on{border-color:var(--accent);color:var(--text);font-weight:500}
+.cmp-check input{display:none}
+.cmp-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+</style>
+</head>
+<body>
+
+<div class="ldo" id="ldo">
+  <div class="spin"></div>
+  <div class="ldt" id="ldt">Loading data...</div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">Feedback Insights</div>
+  <div class="hdr-r">
+    <div class="vtabs">
+      <button class="vtab on" onclick="setView('monthly',this)">Monthly</button>
+      <button class="vtab" onclick="setView('daily',this)">Daily</button>
+      <button class="vtab" onclick="setView('compare',this)">Compare</button>
+    </div>
+    <button class="ibtn" title="Toggle theme" onclick="toggleTheme()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <button class="ibtn" title="Refresh" onclick="loadAllData()">
+      <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+    </button>
+    <button class="ibtn" title="Settings" onclick="openSettings()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- SUB BAR -->
+<div class="subbar" id="subbar">
+  <!-- monthly controls -->
+  <div id="ctrl-monthly" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <select class="mdrop" id="mdrop" onchange="onMonthChange()"><option value="all">All Months</option></select>
+  </div>
+  <!-- daily controls -->
+  <div id="ctrl-daily" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+    <div class="day-mode-tog">
+      <button class="dmbtn on" id="dm-single" onclick="setDayMode('single')">Single Day</button>
+      <button class="dmbtn" id="dm-range" onclick="setDayMode('range')">Range</button>
+    </div>
+    <input type="date" class="date-input" id="date-a" onchange="applyDateFilter()">
+    <span class="sep" id="range-sep" style="display:none">→</span>
+    <input type="date" class="date-input" id="date-b" onchange="applyDateFilter()" style="display:none">
+    <button class="clear-btn" onclick="clearDates()" title="Clear">&#x2715;</button>
+  </div>
+  <div id="ctrl-compare" style="display:none;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--text3)">Select up to 3 months:</span>
+    <div id="compare-checks" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <span id="compare-hint" style="font-size:12px;color:var(--text3);font-style:italic"></span>
+  </div>
+  <span class="showing" id="showing-lbl">All Time</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div id="status" style="font-size:13px;color:var(--text3);margin-bottom:12px;min-height:18px"></div>
+
+  <!-- METRIC CARDS -->
+  <div class="mgrid">
+    <div class="mc">
+      <div class="mc-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div><div class="mc-lbl">Total Responses</div><div class="mc-val" id="m-tot">—</div><div class="mc-sub" id="m-tot-s">—</div></div>
+    </div>
+    <div class="mc">
+      <div class="mc-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div><div class="mc-lbl">Overall Rating</div><div class="mc-val" id="m-ov">—</div><div class="mc-sub">out of 5.0</div></div>
+    </div>
+    <div class="mc">
+      <div class="mc-icon"><svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div>
+      <div><div class="mc-lbl">Food Rating</div><div class="mc-val" id="m-fd">—</div><div class="mc-sub">out of 5.0</div></div>
+    </div>
+    <div class="mc">
+      <div class="mc-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+      <div><div class="mc-lbl">Service Rating</div><div class="mc-val" id="m-sv">—</div><div class="mc-sub">out of 5.0</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <!-- DISCOVERY -->
+      <div class="card">
+        <div class="ch">
+          <div class="ci"><svg viewBox="0 0 24 24"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg></div>
+          <div><div class="ct">Discovery Sources</div><div class="cs">How customers find your restaurant</div></div>
+        </div>
+        <div class="slbl">Current Distribution</div>
+        <div style="position:relative;height:200px;margin-bottom:22px"><canvas id="c-disc" role="img" aria-label="Bar chart of discovery sources">No data.</canvas></div>
+        <div class="slbl" id="trend-lbl">Monthly Trends</div>
+        <div style="position:relative;height:200px"><canvas id="c-disc-trend" role="img" aria-label="Discovery trend chart">No data.</canvas></div>
+      </div>
+      <!-- RATINGS TREND -->
+      <div class="card">
+        <div class="ch" style="margin-bottom:10px">
+          <div class="ci"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div><div class="ct">Ratings Over Time</div><div class="cs">Average per category</div></div>
+        </div>
+        <div class="ttog">
+          <button class="tbtn on" data-key="overall" onclick="togTrend(this)">Overall</button>
+          <button class="tbtn on" data-key="food" onclick="togTrend(this)">Food</button>
+          <button class="tbtn on" data-key="ambience" onclick="togTrend(this)">Ambience</button>
+          <button class="tbtn on" data-key="service" onclick="togTrend(this)">Service</button>
+        </div>
+        <div style="position:relative;height:230px"><canvas id="c-trend" role="img" aria-label="Ratings trend">No data.</canvas></div>
+      </div>
+    </div>
+
+    <!-- RIGHT COL -->
+    <div class="rcol">
+      <div class="rc">
+        <div class="ch"><div class="ci"><svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></div><div class="ct">Food</div></div>
+        <div class="dw"><div class="dcw"><canvas id="d-food" role="img" aria-label="Food donut"></canvas></div></div>
+        <div class="ll" id="ll-food"></div>
+      </div>
+      <div class="rc">
+        <div class="ch"><div class="ci"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="ct">Ambience</div></div>
+        <div class="dw"><div class="dcw"><canvas id="d-amb" role="img" aria-label="Ambience donut"></canvas></div></div>
+        <div class="ll" id="ll-amb"></div>
+      </div>
+      <div class="rc">
+        <div class="ch"><div class="ci"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div class="ct">Service</div></div>
+        <div class="dw"><div class="dcw"><canvas id="d-svc" role="img" aria-label="Service donut"></canvas></div></div>
+        <div class="ll" id="ll-svc"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- COMPARE VIEW -->
+<div id="view-compare" style="display:none;padding:20px 24px;max-width:1280px;margin:0 auto">
+  <div id="compare-empty" class="empty" style="display:none">
+    <strong>Select months to compare</strong>
+    Choose 2 or 3 months from the bar above to start comparing.
+  </div>
+  <div id="compare-charts" style="display:flex;flex-direction:column;gap:16px">
+    <!-- Discovery -->
+    <div class="card">
+      <div class="ch">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg></div>
+        <div>
+          <div class="ct">Discovery Sources</div>
+          <div class="cs">Customers per source — grouped by month</div>
+        </div>
+      </div>
+      <div id="cmp-disc-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div style="position:relative;height:300px"><canvas id="c-cmp-disc" role="img" aria-label="Grouped bar chart comparing discovery sources across months">Select months to compare.</canvas></div>
+    </div>
+    <!-- Ratings -->
+    <div class="card">
+      <div class="ch">
+        <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div>
+          <div class="ct">Ratings Comparison</div>
+          <div class="cs">Average scores per category — grouped by month</div>
+        </div>
+      </div>
+      <div id="cmp-rat-legend" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div style="position:relative;height:300px"><canvas id="c-cmp-rat" role="img" aria-label="Grouped bar chart comparing ratings across months">Select months to compare.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="ov" id="ov" onclick="if(event.target===this)closeSettings()">
+  <div class="sp">
+    <button class="xbtn" onclick="closeSettings()">&#x2715;</button>
+    <div class="st"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+
+    <div class="ss">
+      <div class="ss-t"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>Google Sheets API Key</div>
+      <div class="ss-s">Enter your Google Cloud API key with Sheets API enabled.</div>
+      <div class="fl">API Key</div>
+      <input class="fi" type="password" id="s-key" placeholder="AIzaSy..." autocomplete="off">
+    </div>
+
+    <div class="ss">
+      <div class="ss-t"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Monthly Spreadsheets</div>
+      <div class="ss-s">Sheets are pre-configured. Contact your developer to add new months.</div>
+      <div style="font-size:13px;color:var(--teal);padding:8px 0">✓ January, February, March, April 2026 configured</div>
+    </div>
+
+    <button class="svb" onclick="saveConfig()">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save Configuration
+    </button>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let cfg = { apiKey:'', months:[] };
+let allData = {};          // "Month Year" -> { summary:[], daily:[] }
+let charts = {};
+let curView = 'monthly';
+let curMonth = 'all';
+let dayMode = 'single';
+let dateA = null;          // single day OR range start
+let dateB = null;          // range end
+let actTrends = { overall:true, food:true, ambience:true, service:true };
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+function loadConfig(){
+  // Hardcoded months — always present
+  const HARDCODED_MONTHS=[
+    {month:'January', year:'2026', sheetId:'1J202sE18naSniBROclzs3oYBYbt2nRwV1wYj7pGetkU'},
+    {month:'February', year:'2026', sheetId:'1P75Ni_GEbh9kTWklJxfLsED2LGU0ZgI0getNrRRfhdM'},
+    {month:'March', year:'2026', sheetId:'1WKyC1eF0C5ScLq56kDQd2jedunsRUTLQPdl8X1EoCXg'},
+    {month:'April', year:'2026', sheetId:'1XnZ89-OKdyAROzTgogTlk2yXKNBMOVXbtR2SKnsZ4bQ'},
+  ];
+  // Hardcoded API key
+  cfg.apiKey='AIzaSyCUMm_REIkCit2c4s970WIzIW7z8tOHnU0';
+  // Always use hardcoded months — never from localStorage
+  cfg.months=HARDCODED_MONTHS;
+}
+function saveConfig(){
+  const k=document.getElementById('s-key').value.trim();
+  if(k) cfg.apiKey=k;
+  try{ localStorage.setItem('sc_cfg2',JSON.stringify({apiKey:cfg.apiKey})); }catch(e){}
+  setStatus('API key saved.','ok');
+  closeSettings();
+  loadAllData();
+}
+
+// ── SETTINGS UI ───────────────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('s-key').value=cfg.apiKey||'';
+  document.getElementById('ov').classList.add('open');
+}
+function closeSettings(){ document.getElementById('ov').classList.remove('open'); }
+function addME(){ /* months are hardcoded */ }
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  // update color-scheme for date inputs
+  document.querySelectorAll('.date-input').forEach(el=>{
+    el.style.colorScheme=document.body.classList.contains('light')?'light':'dark';
+  });
+}
+
+// ── FETCH ─────────────────────────────────────────────────────────────────────
+async function loadAllData(){
+  if(!cfg.apiKey||!cfg.months.length){
+    hideLd();
+    setStatus('Open settings ⚙ to add your API key and sheet IDs.');
+    return;
+  }
+  showLd('Fetching...');
+  for(const m of cfg.months){
+    const label=`${m.month} ${m.year}`;
+    try{
+      setLd(`Loading ${label}...`);
+      const sumRows=await fetchTab(m.sheetId,'Summary & Analytics');
+      const tabs=await fetchTabs(m.sheetId);
+      const rawDaily=[];
+      // batch fetch all daily tabs in one API call
+      const dailyTabs=tabs.filter(t=>t!=='Summary & Analytics'&&t!=='Duplicate for new day');
+      setLd(`Loading ${label}: fetching ${dailyTabs.length} tabs...`);
+      // batchGet has a URL length limit — split into chunks of 50 tabs max
+      const CHUNK=50;
+      for(let i=0;i<dailyTabs.length;i+=CHUNK){
+        const chunk=dailyTabs.slice(i,i+CHUNK);
+        const tabData=await fetchAllDailyTabs(m.sheetId,chunk);
+        chunk.forEach(t=>{
+          const rows=tabData[t]||[];
+          const tabDate=tabToDate(t,m.month,m.year);
+          const proc=applyIGRule(rows);
+          proc.forEach(r=>{ r._tabDate=tabDate; r._tab=t; });
+          rawDaily.push(...proc);
+        });
+      }
+      // only overwrite if fetch succeeded — never wipe existing data on failure
+      allData[label]={
+        summary:parseSummary(sumRows),
+        daily:parseDailyRows(rawDaily),
+        month:m.month,
+        year:m.year
+      };
+    }catch(ex){
+      // keep whatever was previously loaded for this month
+      setStatus(`Error loading ${label}: ${ex.message}`,'err');
+      console.error(`[${label}]`,ex);
+    }
+  }
+  buildMonthDrop();
+  renderAll();
+  hideLd();
+}
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function fetchWithRetry(url,retries=3,delay=2000){
+  for(let i=0;i<retries;i++){
+    try{
+      const r=await fetch(url);
+      if(r.status===429){
+        const wait=delay*(i+1);
+        setLd(`Rate limited, waiting ${wait/1000}s...`);
+        await sleep(wait);
+        continue;
+      }
+      if(!r.ok) throw new Error(`API ${r.status}`);
+      return await r.json();
+    }catch(ex){
+      if(i===retries-1) throw ex;
+      await sleep(delay);
+    }
+  }
+}
+
+// Get all tab names — 1 API call
+async function fetchTabs(sid){
+  const d=await fetchWithRetry(`https://sheets.googleapis.com/v4/spreadsheets/${sid}?key=${cfg.apiKey}&fields=sheets.properties.title`);
+  return (d.sheets||[]).map(s=>s.properties.title);
+}
+
+// Fetch one tab — used only for Summary & Analytics
+async function fetchTab(sid,tab){
+  const d=await fetchWithRetry(`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values/${encodeURIComponent(tab)}?key=${cfg.apiKey}`);
+  const rows=d.values||[];
+  if(rows.length<2) return [];
+  const headers=rows[0].map(h=>(h||'').trim());
+  return rows.slice(1).map(row=>{ const o={}; headers.forEach((h,i)=>o[h]=(row[i]||'').trim()); return o; });
+}
+
+// Batch fetch ALL daily tabs in ONE API call using batchGet
+async function fetchAllDailyTabs(sid,tabs){
+  if(!tabs.length) return {};
+  // Use POST batchGet to avoid URL length issues with many tabs
+  // Each range is "TabName!A:F" — only columns A-F needed
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values:batchGet?key=${cfg.apiKey}&`+
+    tabs.map(t=>`ranges=${encodeURIComponent(t+'!A:F')}`).join('&');
+  const d=await fetchWithRetry(url);
+  const result={};
+  // Map by extracting tab name from the returned range string e.g. "'29th Mar'!A1:F30" -> "29th Mar"
+  // This is more reliable than index-based mapping
+  (d.valueRanges||[]).forEach((vr,i)=>{
+    // Get tab name from the range property returned by API
+    const rangeStr=vr.range||'';
+    // range format: "TabName!A1:F30" or "'Tab Name'!A1:F30"
+    const tabFromRange=rangeStr.replace(/^'?([^'!]+)'?!.*$/,'$1').trim();
+    // find matching tab (case-insensitive fallback)
+    const matchedTab=tabs.find(t=>t===tabFromRange||t.toLowerCase()===tabFromRange.toLowerCase())||tabs[i];
+    const rows=vr.values||[];
+    if(rows.length<2){ result[matchedTab]=[]; return; }
+    const headers=rows[0].map(h=>(h||'').trim());
+    result[matchedTab]=rows.slice(1).map(row=>{
+      const o={};
+      headers.forEach((h,j)=>o[h]=(row[j]||'').trim());
+      return o;
+    });
+    console.log(`[batchGet] tab="${matchedTab}" rows=${rows.length-1}`);
+  });
+  return result;
+}
+
+// ── PARSE ─────────────────────────────────────────────────────────────────────
+function normDisc(val){
+  if(!val) return null;
+  const v=val.toLowerCase().trim();
+  if(v.includes('instagram')||v==='ig') return 'Instagram';
+  if(v.includes('friend')||v.includes('fam')||v.includes('f&f')) return 'Friends & Family';
+  if(v.includes('twitter')||v.includes('/x')) return 'Twitter/X';
+  if(v.length>0) return 'Others';
+  return null;
+}
+
+// Instagram table rule: if ANY row in a gap-separated group has Instagram, ALL rows = Instagram
+function applyIGRule(rows){
+  const groups=[]; let cur=[];
+  rows.forEach(r=>{
+    const has=Object.values(r).some(v=>v&&v.trim());
+    if(has){ cur.push(r); }
+    else{ if(cur.length){ groups.push(cur); cur=[]; } }
+  });
+  if(cur.length) groups.push(cur);
+  groups.forEach(g=>{
+    const hasIG=g.some(r=>normDisc(r['Discovered via?']||r['Discovered Via']||'')==='Instagram');
+    if(hasIG) g.forEach(r=>r['_disc_override']='Instagram');
+  });
+  return rows;
+}
+
+function tabToDate(tabName,month,year){
+  const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+  const clean=tabName.toLowerCase().replace(/[^a-z0-9 ]/g,' ').trim();
+  const numMatch=clean.match(/\d+/);
+  const day=numMatch?parseInt(numMatch[0]):null;
+  if(!day) return null;
+  let mon=null;
+  for(const[k,v] of Object.entries(MONTHS)){ if(clean.includes(k)){mon=v;break;} }
+  if(mon===null){ const fb=MONTHS[month.toLowerCase().slice(0,3)]; mon=fb!==undefined?fb:0; }
+  return new Date(parseInt(year)||new Date().getFullYear(),mon,day);
+}
+
+function pf(r,...keys){ for(const k of keys){ const v=parseFloat(r[k]||''); if(!isNaN(v)&&v>0) return v; } return 0; }
+
+function findCol(r, ...candidates){
+  const keys=Object.keys(r);
+  const norm=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
+  for(const c of candidates){
+    const cn=norm(c);
+    const found=keys.find(k=>norm(k)===cn||norm(k).includes(cn)||cn.includes(norm(k)));
+    if(found&&r[found]!==undefined&&r[found]!=='') return r[found];
+  }
+  return '';
+}
+
+// Parse a number that might be "47.99%" or "1,234" or "15"
+function parseNum(val){
+  if(!val&&val!==0) return 0;
+  const s=String(val).replace(/%/g,'').replace(/,/g,'').trim();
+  const n=parseFloat(s);
+  return isNaN(n)?0:n;
+}
+
+function parseSummary(rows){
+  if(!rows.length) return [];
+  const keys=Object.keys(rows[0]);
+  console.log('[parseSummary] columns:', keys);
+  // find ig and ff columns by scanning headers directly
+  const igKey=keys.find(k=>{ const n=k.toLowerCase().replace(/[^a-z0-9]/g,''); return n.includes('igvisit')||n.includes('igvis')||n==='ig'; });
+  const ffKey=keys.find(k=>{ const n=k.toLowerCase().replace(/[^a-z0-9]/g,''); return n.includes('ffvisit')||n.includes('ffvis')||n.includes('fandfvisit')||n.includes('friendsvisit'); });
+  console.log('[parseSummary] ig col:', igKey, 'ff col:', ffKey);
+  return rows.filter(r=>{
+    const d=findCol(r,'date');
+    const ov=parseFloat(findCol(r,'overall'));
+    return d&&!isNaN(ov)&&ov>0;
+  }).map(r=>({
+    date:    findCol(r,'date'),
+    dateObj: parseSheetDate(findCol(r,'date')),
+    overall: parseNum(findCol(r,'overall'))||0,
+    food:    parseNum(findCol(r,'food'))||0,
+    ambience:parseNum(findCol(r,'ambience'))||0,
+    service: parseNum(findCol(r,'service'))||0,
+    ig:      igKey?parseNum(r[igKey]):0,
+    ff:      ffKey?parseNum(r[ffKey]):0,
+  }));
+}
+
+function parseSheetDate(str){
+  if(!str) return null;
+  // dd/mm/yyyy
+  if(str.includes('/')){
+    const parts=str.split('/');
+    if(parts.length===3) return new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+  }
+  const d=new Date(str);
+  return isNaN(d)?null:d;
+}
+
+function getCol(r, ...keys){
+  // case-insensitive, partial match across all possible column name variants
+  const rkeys = Object.keys(r);
+  for(const k of keys){
+    const kl = k.toLowerCase();
+    const found = rkeys.find(rk => rk.toLowerCase() === kl);
+    if(found && r[found] !== '') return r[found];
+  }
+  // fallback: partial match
+  for(const k of keys){
+    const kl = k.toLowerCase();
+    const found = rkeys.find(rk => rk.toLowerCase().includes(kl) || kl.includes(rk.toLowerCase()));
+    if(found && r[found] !== '') return r[found];
+  }
+  return '';
+}
+
+function parseDailyRows(rows){
+  return rows.filter(r=>{
+    const ov=parseInt(getCol(r,'Overall Experience','Overall experience','Overall','overall'));
+    const fd=parseInt(getCol(r,'Food','food'));
+    const am=parseInt(getCol(r,'Ambience','ambience'));
+    const sv=parseInt(getCol(r,'Service','service'));
+    // require overall + at least 2 other ratings to be valid (1-5)
+    const validRatings=[ov,fd,am,sv].filter(v=>!isNaN(v)&&v>=1&&v<=5);
+    return validRatings.length>=3;
+  }).map(r=>({
+    overall: parseInt(getCol(r,'Overall Experience','Overall experience','Overall','overall'))||0,
+    food:    parseInt(getCol(r,'Food','food'))||0,
+    ambience:parseInt(getCol(r,'Ambience','ambience'))||0,
+    service: parseInt(getCol(r,'Service','service'))||0,
+    disc:    r['_disc_override']||normDisc(getCol(r,'Discovered via?','Discovered Via','Discovered via','discovered via')),
+    date:    r._tabDate||null,
+  }));
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function getFiltered(){
+  const parseInputDate=(s,endOfDay=false)=>{
+    if(!s) return null;
+    const [y,m,d]=s.split('-').map(Number);
+    return endOfDay?new Date(y,m-1,d,23,59,59):new Date(y,m-1,d,0,0,0);
+  };
+
+  // In daily view with a date selected — ignore month dropdown, search ALL data
+  if(curView==='daily'&&(dateA||dateB)){
+    const from=parseInputDate(dateA);
+    const to=parseInputDate(dateB||dateA,true);
+    const allSummary=Object.values(allData).flatMap(d=>d.summary);
+    const allDaily=Object.values(allData).flatMap(d=>d.daily);
+    const inRange=d=>{ if(!d) return false; if(from&&d<from) return false; if(to&&d>to) return false; return true; };
+    return{
+      summary:allSummary.filter(r=>inRange(r.dateObj)),
+      daily:allDaily.filter(r=>inRange(r.date))
+    };
+  }
+
+  // Monthly view — filter by selected month
+  if(curMonth==='all'){
+    return{
+      summary:Object.values(allData).flatMap(d=>d.summary),
+      daily:Object.values(allData).flatMap(d=>d.daily)
+    };
+  }
+  const d=allData[curMonth]||{summary:[],daily:[]};
+  return{summary:[...d.summary],daily:[...d.daily]};
+}
+
+// ── AGGREGATE HELPERS ─────────────────────────────────────────────────────────
+function avg(arr,k){ const v=arr.map(r=>r[k]).filter(x=>x>0); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; }
+
+function ratingDist(arr,k){
+  const d={5:0,4:0,3:0,2:0,1:0};
+  arr.forEach(r=>{ const v=r[k]; if(v>=1&&v<=5) d[v]++; });
+  const t=Object.values(d).reduce((a,b)=>a+b,0)||1;
+  return{ excellent:d[5]/t, good:d[4]/t, average:d[3]/t, poor:(d[2]+d[1])/t };
+}
+
+// Discovery counts — daily rows are the source of truth for disc (they carry the IG rule)
+// Summary ig/ff totals are used only when daily disc data is absent
+function getDiscCounts(summary,daily){
+  // daily rows are the ONLY source of truth — IG table rule is applied per tab
+  const counts={Instagram:0,'Friends & Family':0,'Twitter/X':0,Others:0};
+  daily.filter(r=>r.disc).forEach(r=>{
+    if(counts[r.disc]!==undefined) counts[r.disc]++;
+    else counts['Others']++;
+  });
+  return counts;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderAll(){
+  const{summary,daily}=getFiltered();
+  if(!summary.length&&!daily.length){ setStatus('No data for selected period.'); return; }
+  setStatus('');
+
+  // Debug: log what we got
+  console.log('[renderAll] summary:',summary.length,'daily:',daily.length);
+  if(daily.length) console.log('[renderAll] sample daily row:',JSON.stringify(daily[0]));
+  if(daily.length) console.log('[renderAll] disc values:',daily.map(r=>r.disc));
+
+  // Metric cards — use daily rows for response count (each row = 1 customer)
+  const tot=daily.length||summary.length;
+  document.getElementById('m-tot').textContent=tot.toLocaleString();
+  document.getElementById('m-tot-s').textContent=getShowingLabel();
+  document.getElementById('m-ov').textContent=avg(summary.length?summary:daily,'overall').toFixed(2);
+  document.getElementById('m-fd').textContent=avg(summary.length?summary:daily,'food').toFixed(2);
+  document.getElementById('m-sv').textContent=avg(summary.length?summary:daily,'service').toFixed(2);
+
+  renderDiscBar(summary,daily);
+  renderDiscTrend(summary,daily);
+  renderTrend(summary);
+  const distSrc=daily.length?daily:summary;
+  renderDonut('food',ratingDist(distSrc,'food'),'d-food','ll-food');
+  renderDonut('ambience',ratingDist(distSrc,'ambience'),'d-amb','ll-amb');
+  renderDonut('service',ratingDist(distSrc,'service'),'d-svc','ll-svc');
+}
+
+function kill(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+const COLORS=['#e07a5f','#6b9080','#c9a84c','#555555'];
+const G={color:'rgba(128,128,128,0.1)'};
+const T={color:'#9a9690',font:{size:12}};
+
+function renderDiscBar(summary,daily){
+  kill('disc');
+  const c=getDiscCounts(summary,daily);
+  const labels=Object.keys(c);
+  const vals=Object.values(c);
+  charts['disc']=new Chart(document.getElementById('c-disc'),{
+    type:'bar',
+    data:{labels,datasets:[{data:vals,backgroundColor:COLORS,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:G,ticks:T},y:{grid:G,ticks:T,beginAtZero:true}}}
+  });
+}
+
+function renderDiscTrend(summary,daily){
+  kill('disc-trend');
+  const months=typeof sortedMonthKeys==='function'?sortedMonthKeys():Object.keys(allData);
+  // In daily view with date filter, show day-by-day breakdown instead of monthly trend
+  if(curView==='daily'&&(dateA||dateB)){
+    document.getElementById('trend-lbl').textContent='Daily Breakdown';
+    // group daily by date
+    const byDate={};
+    daily.forEach(r=>{
+      if(!r.date) return;
+      const k=r.date.toISOString().split('T')[0];
+      if(!byDate[k]) byDate[k]={ig:0,ff:0,tw:0,ot:0};
+      if(r.disc==='Instagram') byDate[k].ig++;
+      else if(r.disc==='Friends & Family') byDate[k].ff++;
+      else if(r.disc==='Twitter/X') byDate[k].tw++;
+      else if(r.disc) byDate[k].ot++;
+    });
+    // daily tabs are the sole source — no summary fallback
+    const sortedDates=Object.keys(byDate).sort();
+    if(!sortedDates.length) return;
+    charts['disc-trend']=new Chart(document.getElementById('c-disc-trend'),{
+      type:'bar',
+      data:{
+        labels:sortedDates,
+        datasets:[
+          {label:'Instagram',data:sortedDates.map(d=>byDate[d].ig),backgroundColor:'#e07a5f',stack:'s'},
+          {label:'Friends & Family',data:sortedDates.map(d=>byDate[d].ff),backgroundColor:'#6b9080',stack:'s'},
+          {label:'Twitter/X',data:sortedDates.map(d=>byDate[d].tw),backgroundColor:'#c9a84c',stack:'s'},
+          {label:'Others',data:sortedDates.map(d=>byDate[d].ot),backgroundColor:'#555',stack:'s'},
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#9a9690',boxWidth:10,font:{size:12}}}},
+        scales:{x:{stacked:true,grid:G,ticks:T},y:{stacked:true,grid:G,ticks:T,beginAtZero:true}}}
+    });
+    return;
+  }
+  // Monthly trend
+  document.getElementById('trend-lbl').textContent='Monthly Trends';
+  if(months.length<2) return;
+  charts['disc-trend']=new Chart(document.getElementById('c-disc-trend'),{
+    type:'line',
+    data:{
+      labels:months,
+      datasets:[
+        {label:'Instagram',data:months.map(m=>allData[m].daily.filter(r=>r.disc==='Instagram').length),borderColor:'#e07a5f',backgroundColor:'rgba(224,122,95,0.12)',fill:true,tension:0.4,borderWidth:2,pointRadius:4},
+        {label:'Friends & Family',data:months.map(m=>allData[m].daily.filter(r=>r.disc==='Friends & Family').length),borderColor:'#6b9080',backgroundColor:'rgba(107,144,128,0.12)',fill:true,tension:0.4,borderWidth:2,pointRadius:4},
+        {label:'Twitter/X',data:months.map(m=>allData[m].daily.filter(r=>r.disc==='Twitter/X').length),borderColor:'#c9a84c',backgroundColor:'rgba(201,168,76,0.08)',fill:true,tension:0.4,borderWidth:1.5,pointRadius:3},
+        {label:'Others',data:months.map(m=>allData[m].daily.filter(r=>r.disc==='Others').length),borderColor:'#555',backgroundColor:'rgba(85,85,85,0.08)',fill:true,tension:0.4,borderWidth:1.5,pointRadius:3},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#9a9690',boxWidth:10,font:{size:12}}}},
+      scales:{x:{grid:G,ticks:T},y:{grid:G,ticks:T,beginAtZero:true}}}
+  });
+}
+
+function renderTrend(summary){
+  kill('trend');
+  if(!summary.length) return;
+  const cols={overall:'#f0ece4',food:'#e07a5f',ambience:'#6b9080',service:'#c9a84c'};
+  const datasets=Object.keys(actTrends).filter(k=>actTrends[k]).map(k=>({
+    label:k.charAt(0).toUpperCase()+k.slice(1),
+    data:summary.map(r=>r[k]>0?r[k]:null),
+    borderColor:cols[k],backgroundColor:'transparent',
+    borderWidth:1.5,pointRadius:2,tension:0.4,fill:false,spanGaps:true
+  }));
+  charts['trend']=new Chart(document.getElementById('c-trend'),{
+    type:'line',
+    data:{labels:summary.map(r=>r.date),datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:G,ticks:{...T,maxTicksLimit:12,maxRotation:45,autoSkip:true}},
+              y:{min:3,max:5,grid:G,ticks:{...T,stepSize:0.5}}}}
+  });
+}
+
+function renderDonut(key,d,cid,lid){
+  kill('d-'+key);
+  const labels=['Excellent (5)','Good (4)','Average (3)','Poor (1-2)'];
+  const vals=[d.excellent,d.good,d.average,d.poor].map(v=>parseFloat((v*100).toFixed(1)));
+  charts['d-'+key]=new Chart(document.getElementById(cid),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:COLORS,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'70%'}
+  });
+  document.getElementById(lid).innerHTML=labels.map((l,i)=>`
+    <div class="lr"><span class="ll-l"><span class="ld" style="background:${COLORS[i]}"></span>${l}</span><span class="lp">${vals[i].toFixed(1)}%</span></div>`).join('');
+}
+
+// ── CONTROLS ──────────────────────────────────────────────────────────────────
+function setView(v,btn){
+  curView=v;
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ctrl-monthly').style.display=v==='monthly'?'flex':'none';
+  document.getElementById('ctrl-daily').style.display=v==='daily'?'flex':'none';
+  document.getElementById('ctrl-compare').style.display=v==='compare'?'flex':'none';
+  // toggle main vs compare view
+  document.querySelector('.main').style.display=v==='compare'?'none':'block';
+  document.getElementById('view-compare').style.display=v==='compare'?'block':'none';
+  if(v==='compare'){
+    buildCompareChecks();
+    renderCompare();
+    document.getElementById('showing-lbl').textContent='';
+    return;
+  }
+  // reset date filters when switching
+  dateA=null; dateB=null;
+  document.getElementById('date-a').value='';
+  document.getElementById('date-b').value='';
+  document.getElementById('showing-lbl').textContent=v==='monthly'?(curMonth==='all'?'All Time':curMonth):'Select a day or range';
+  renderAll();
+}
+
+function setDayMode(mode){
+  dayMode=mode;
+  document.getElementById('dm-single').classList.toggle('on',mode==='single');
+  document.getElementById('dm-range').classList.toggle('on',mode==='range');
+  document.getElementById('range-sep').style.display=mode==='range'?'inline':'none';
+  document.getElementById('date-b').style.display=mode==='range'?'inline-block':'none';
+  // clear dates on mode switch
+  dateA=null; dateB=null;
+  document.getElementById('date-a').value='';
+  document.getElementById('date-b').value='';
+  document.getElementById('showing-lbl').textContent='Select a day or range';
+  renderAll();
+}
+
+function applyDateFilter(){
+  dateA=document.getElementById('date-a').value||null;
+  dateB=dayMode==='range'?(document.getElementById('date-b').value||null):null;
+  // update showing label
+  if(dayMode==='single'&&dateA) document.getElementById('showing-lbl').textContent=dateA;
+  else if(dayMode==='range'&&dateA&&dateB) document.getElementById('showing-lbl').textContent=dateA+' → '+dateB;
+  else if(dateA) document.getElementById('showing-lbl').textContent='From '+dateA;
+  else document.getElementById('showing-lbl').textContent='Select a day or range';
+  renderAll();
+}
+
+function clearDates(){
+  dateA=null; dateB=null;
+  document.getElementById('date-a').value='';
+  document.getElementById('date-b').value='';
+  document.getElementById('showing-lbl').textContent='Select a day or range';
+  renderAll();
+}
+
+function onMonthChange(){
+  curMonth=document.getElementById('mdrop').value;
+  document.getElementById('showing-lbl').textContent=curMonth==='all'?'All Time':curMonth;
+  renderAll();
+}
+
+const MONTH_ORDER={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+function sortedMonthKeys(){
+  return Object.keys(allData).sort((a,b)=>{
+    const pa=a.toLowerCase().split(' '); const pb=b.toLowerCase().split(' ');
+    const yi=parseInt(pa[1]||0)-parseInt(pb[1]||0);
+    if(yi!==0) return yi;
+    return (MONTH_ORDER[pa[0]]||0)-(MONTH_ORDER[pb[0]]||0);
+  });
+}
+function buildMonthDrop(){
+  if(curView==='compare') buildCompareChecks();
+  const d=document.getElementById('mdrop');
+  d.innerHTML='<option value="all">All Months</option>';
+  sortedMonthKeys().forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; d.appendChild(o); });
+}
+
+function togTrend(btn){
+  const k=btn.dataset.key;
+  actTrends[k]=!actTrends[k];
+  btn.classList.toggle('on',actTrends[k]);
+  const{summary}=getFiltered();
+  renderTrend(summary);
+}
+
+function getShowingLabel(){
+  if(curView==='monthly') return curMonth==='all'?'All Time':curMonth;
+  if(dayMode==='single'&&dateA) return dateA;
+  if(dayMode==='range'&&dateA&&dateB) return dateA+' → '+dateB;
+  return 'All Daily Data';
+}
+
+function setStatus(msg,type){
+  const e=document.getElementById('status');
+  e.textContent=msg;
+  e.style.color=type==='err'?'var(--accent)':type==='ok'?'var(--teal)':'var(--text3)';
+}
+function showLd(msg){ document.getElementById('ldo').classList.remove('gone'); document.getElementById('ldt').textContent=msg; }
+function setLd(msg){ document.getElementById('ldt').textContent=msg; }
+function hideLd(){ document.getElementById('ldo').classList.add('gone'); }
+
+
+// ── COMPARE ───────────────────────────────────────────────────────────────────
+const CMP_COLORS = ['#e07a5f','#6b9080','#c9a84c'];
+let selectedMonths = [];
+
+function buildCompareChecks(){
+  const container = document.getElementById('compare-checks');
+  container.innerHTML = '';
+  Object.keys(allData).forEach((m,i) => {
+    const label = document.createElement('label');
+    label.className = 'cmp-check' + (selectedMonths.includes(m) ? ' on' : '');
+    const color = CMP_COLORS[selectedMonths.indexOf(m)] || 'var(--border2)';
+    label.innerHTML = `<input type="checkbox" value="${m}" onchange="onCompareCheck(this)" ${selectedMonths.includes(m)?'checked':''}><span class="cmp-swatch" style="background:${color}"></span>${m}`;
+    container.appendChild(label);
+  });
+  updateCompareHint();
+}
+
+function onCompareCheck(input){
+  const m = input.value;
+  if(input.checked){
+    if(selectedMonths.length >= 3){ input.checked = false; return; }
+    selectedMonths.push(m);
+  } else {
+    selectedMonths = selectedMonths.filter(x => x !== m);
+  }
+  buildCompareChecks();
+  renderCompare();
+}
+
+function updateCompareHint(){
+  const hint = document.getElementById('compare-hint');
+  if(selectedMonths.length === 0) hint.textContent = 'Select at least 2 months';
+  else if(selectedMonths.length === 1) hint.textContent = 'Select 1 more month';
+  else hint.textContent = '';
+}
+
+function renderCompare(){
+  const empty = document.getElementById('compare-empty');
+  const charts = document.getElementById('compare-charts');
+  if(selectedMonths.length < 2){
+    empty.style.display = 'block';
+    charts.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  charts.style.display = 'flex';
+  renderCmpDisc();
+  renderCmpRatings();
+}
+
+function renderCmpDisc(){
+  kill('cmp-disc');
+  const sources = ['Instagram','Friends & Family','Twitter/X','Others'];
+  // For each source, one dataset per month
+  const datasets = selectedMonths.map((m, mi) => {
+    const d = allData[m];
+    const counts = getDiscCounts([], d.daily);
+    return {
+      label: m,
+      data: sources.map(s => counts[s] || 0),
+      backgroundColor: CMP_COLORS[mi],
+      borderRadius: 4,
+      borderSkipped: false,
+    };
+  });
+  // Legend
+  document.getElementById('cmp-disc-legend').innerHTML = selectedMonths.map((m,i) =>
+    `<span class="ll-l" style="font-size:13px;color:var(--text2)"><span class="ld" style="background:${CMP_COLORS[i]};width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px"></span>${m}</span>`
+  ).join('');
+  charts['cmp-disc'] = new Chart(document.getElementById('c-cmp-disc'), {
+    type: 'bar',
+    data: { labels: sources, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: G, ticks: T },
+        y: { grid: G, ticks: T, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderCmpRatings(){
+  kill('cmp-rat');
+  const categories = ['Overall','Food','Ambience','Service'];
+  const keys = ['overall','food','ambience','service'];
+  const datasets = selectedMonths.map((m, mi) => {
+    const d = allData[m];
+    return {
+      label: m,
+      data: keys.map(k => parseFloat(avg(d.summary, k).toFixed(2))),
+      backgroundColor: CMP_COLORS[mi],
+      borderRadius: 4,
+      borderSkipped: false,
+    };
+  });
+  // Legend
+  document.getElementById('cmp-rat-legend').innerHTML = selectedMonths.map((m,i) =>
+    `<span class="ll-l" style="font-size:13px;color:var(--text2)"><span class="ld" style="background:${CMP_COLORS[i]};width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px"></span>${m}</span>`
+  ).join('');
+  charts['cmp-rat'] = new Chart(document.getElementById('c-cmp-rat'), {
+    type: 'bar',
+    data: { labels: categories, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: G, ticks: T },
+        y: { grid: G, ticks: T, min: 0, max: 5, stepSize: 1 }
+      }
+    }
+  });
+}
+
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadConfig();
+if(cfg.apiKey&&cfg.months.length){ loadAllData(); }
+else{ hideLd(); setStatus('Configuration error — contact your administrator.'); }
+</script>
+</body>
+</html>
