@@ -121,6 +121,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .cmp-check input{display:none}
 .cmp-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 
+
+.remarks-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:24px;margin-top:12px}
+.remark-item{padding:12px 0;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:4px}
+.remark-item:last-child{border-bottom:none;padding-bottom:0}
+.remark-date{font-size:11px;color:var(--text3);letter-spacing:.04em}
+.remark-text{font-size:13px;color:var(--text);line-height:1.5}
+.remark-ratings{font-size:11px;color:var(--text3)}
+.no-remarks{font-size:13px;color:var(--text3);text-align:center;padding:20px 0}
 </style>
 </head>
 <body>
@@ -250,6 +258,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
+
+<!-- REMARKS -->
+<div class="main" id="remarks-section" style="padding-top:0">
+  <div class="remarks-card">
+    <div class="ch" style="margin-bottom:16px">
+      <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <div><div class="ct">Remarks</div><div class="cs">Customer feedback — negative notes only</div></div>
+    </div>
+    <div id="remarks-list"><div class="no-remarks">No remarks for selected period.</div></div>
+  </div>
+</div>
 
 <!-- COMPARE VIEW -->
 <div id="view-compare" style="display:none;padding:20px 24px;max-width:1280px;margin:0 auto">
@@ -607,6 +626,7 @@ function parseDailyRows(rows){
     service: parseInt(getCol(r,'Service','service'))||0,
     disc:    r['_disc_override']||normDisc(getCol(r,'Discovered via?','Discovered Via','Discovered via','discovered via')),
     date:    r._tabDate||null,
+    remark:  getCol(r,'Remarks (only negatives)','Remarks','remarks','remark','negative','feedback')||'',
   }));
 }
 
@@ -690,6 +710,32 @@ function renderAll(){
   renderDonut('food',ratingDist(distSrc,'food'),'d-food','ll-food');
   renderDonut('ambience',ratingDist(distSrc,'ambience'),'d-amb','ll-amb');
   renderDonut('service',ratingDist(distSrc,'service'),'d-svc','ll-svc');
+  renderRemarks(daily);
+}
+
+function renderRemarks(daily){
+  const el=document.getElementById('remarks-list');
+  const withRemarks=daily.filter(r=>r.remark&&r.remark.trim());
+  // sort by date descending
+  withRemarks.sort((a,b)=>{
+    if(!a.date&&!b.date) return 0;
+    if(!a.date) return 1;
+    if(!b.date) return -1;
+    return b.date-a.date;
+  });
+  if(!withRemarks.length){
+    el.innerHTML='<div class="no-remarks">No remarks for selected period.</div>';
+    return;
+  }
+  el.innerHTML=withRemarks.map(r=>{
+    const dateStr=r.date?r.date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'Unknown date';
+    const ratings=`Overall: ${r.overall} · Food: ${r.food} · Ambience: ${r.ambience} · Service: ${r.service}`;
+    return `<div class="remark-item">
+      <div class="remark-date">${dateStr}</div>
+      <div class="remark-text">${r.remark}</div>
+      <div class="remark-ratings">${ratings}</div>
+    </div>`;
+  }).join('');
 }
 
 function kill(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
@@ -819,6 +865,7 @@ function setView(v,btn){
   document.getElementById('ctrl-compare').style.display=v==='compare'?'flex':'none';
   // toggle main vs compare view
   document.querySelector('.main').style.display=v==='compare'?'none':'block';
+  document.getElementById('remarks-section').style.display=v==='compare'?'none':'block';
   document.getElementById('view-compare').style.display=v==='compare'?'block':'none';
   if(v==='compare'){
     buildCompareChecks();
