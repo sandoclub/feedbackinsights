@@ -174,6 +174,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
       <button class="dmbtn on" id="dm-single" onclick="setDayMode('single')">Single Day</button>
       <button class="dmbtn" id="dm-range" onclick="setDayMode('range')">Range</button>
     </div>
+    <select class="mdrop" id="meal-drop" onchange="renderAll()" style="min-width:100px">
+      <option value="all">All meals</option>
+      <option value="Lunch">Lunch</option>
+      <option value="Dinner">Dinner</option>
+    </select>
     <input type="date" class="date-input" id="date-a" onchange="applyDateFilter()">
     <span class="sep" id="range-sep" style="display:none">→</span>
     <input type="date" class="date-input" id="date-b" onchange="applyDateFilter()" style="display:none">
@@ -633,6 +638,7 @@ function parseDailyRows(rows){
     date:    r._tabDate||null,
     remark:  getCol(r,'Remarks (only negatives)','Remarks','remarks','remark','negative','feedback')||'',
     bill:    getCol(r,'Bill. no','Bill no','Bill No','bill no','bill number','Bill Number','Bill')||'',
+    meal:    r._meal||'Dinner',
   }));
 }
 
@@ -658,14 +664,21 @@ function getFiltered(){
   }
 
   // Monthly view — filter by selected month
+  let summary, daily;
   if(curMonth==='all'){
-    return{
-      summary:Object.values(allData).flatMap(d=>d.summary),
-      daily:Object.values(allData).flatMap(d=>d.daily)
-    };
+    summary=Object.values(allData).flatMap(d=>d.summary);
+    daily=Object.values(allData).flatMap(d=>d.daily);
+  } else {
+    const d=allData[curMonth]||{summary:[],daily:[]};
+    summary=[...d.summary]; daily=[...d.daily];
   }
-  const d=allData[curMonth]||{summary:[],daily:[]};
-  return{summary:[...d.summary],daily:[...d.daily]};
+  // Apply meal filter (only in daily view)
+  const mealDrop=document.getElementById('meal-drop');
+  const mealFilter=mealDrop?mealDrop.value:'all';
+  if(curView==='daily'&&mealFilter!=='all'){
+    daily=daily.filter(r=>r.meal===mealFilter);
+  }
+  return{summary,daily};
 }
 
 // ── AGGREGATE HELPERS ─────────────────────────────────────────────────────────
@@ -915,6 +928,7 @@ function setView(v,btn){
   dateA=null; dateB=null;
   document.getElementById('date-a').value='';
   document.getElementById('date-b').value='';
+  const md=document.getElementById('meal-drop'); if(md) md.value='all';
   document.getElementById('showing-lbl').textContent=v==='monthly'?(curMonth==='all'?'All Time':curMonth):'Select a day or range';
   renderAll();
 }
@@ -929,6 +943,7 @@ function setDayMode(mode){
   dateA=null; dateB=null;
   document.getElementById('date-a').value='';
   document.getElementById('date-b').value='';
+  const md=document.getElementById('meal-drop'); if(md) md.value='all';
   document.getElementById('showing-lbl').textContent='Select a day or range';
   renderAll();
 }
@@ -948,6 +963,7 @@ function clearDates(){
   dateA=null; dateB=null;
   document.getElementById('date-a').value='';
   document.getElementById('date-b').value='';
+  const md=document.getElementById('meal-drop'); if(md) md.value='all';
   document.getElementById('showing-lbl').textContent='Select a day or range';
   renderAll();
 }
@@ -1108,7 +1124,7 @@ function renderCmpRatings(){
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: G, ticks: T },
-        y: { grid: G, ticks: T, min: 0, max: 5, stepSize: 1 }
+        y: { grid: G, ticks: T, min: 3, max: 5, ticks: {...T, stepSize: 0.5} }
       }
     }
   });
