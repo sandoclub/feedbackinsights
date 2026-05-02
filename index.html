@@ -393,9 +393,31 @@ function toggleTheme(){
 
 // ── FETCH ─────────────────────────────────────────────────────────────────────
 async function loadAllData(){
-  if(!cfg.apiKey||!cfg.months.length){
+  if(!cfg.apiKey){
     hideLd();
-    setStatus('Open settings ⚙ to add your API key and sheet IDs.');
+    setStatus('Configuration error — contact your developer.');
+    return;
+  }
+  showLd('Loading config...');
+  // Fetch months from config sheet
+  try{
+    const configRows=await fetchTab(CONFIG_SHEET_ID,'Sheet1');
+    cfg.months=configRows
+      .filter(r=>(r['Month']||r['month'])&&(r['SheetID']||r['Sheet ID']||r['sheetId']||r['sheetid']))
+      .map(r=>({
+        month: r['Month']||r['month'],
+        year:  r['Year']||r['year']||'2026',
+        sheetId: r['SheetID']||r['Sheet ID']||r['sheetId']||r['sheetid']||r['Sheetid']
+      }));
+    console.log('[config] loaded months:',cfg.months.map(m=>m.month+' '+m.year));
+  }catch(ex){
+    setStatus('Failed to load config: '+ex.message,'err');
+    hideLd();
+    return;
+  }
+  if(!cfg.months.length){
+    setStatus('No months found in config sheet.','err');
+    hideLd();
     return;
   }
   showLd('Fetching...');
