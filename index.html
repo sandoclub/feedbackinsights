@@ -404,12 +404,15 @@ async function loadAllData(){
   try{
     const configRows=await fetchTab(CONFIG_SHEET_ID,'Sheet1');
     cfg.months=configRows
-      .filter(r=>(r['Month']||r['month'])&&(r['SheetID']||r['Sheet ID']||r['sheetId']||r['sheetid']))
-      .map(r=>({
-        month: r['Month']||r['month'],
-        year:  r['Year']||r['year']||'2026',
-        sheetId: r['SheetID']||r['Sheet ID']||r['sheetId']||r['sheetid']||r['Sheetid']
-      }));
+      .filter(r=>{
+        const keys=Object.keys(r).map(k=>k.toLowerCase());
+        return keys.some(k=>k.includes('month')) && keys.some(k=>k.includes('sheet'));
+      })
+      .map(r=>{
+        const get=(prefix)=>{ const k=Object.keys(r).find(k=>k.toLowerCase().includes(prefix)); return k?r[k]:''; };
+        return { month:get('month'), year:get('year')||'2026', sheetId:get('sheet') };
+      })
+      .filter(r=>r.month&&r.sheetId);
     console.log('[config] loaded months:',cfg.months.map(m=>m.month+' '+m.year));
   }catch(ex){
     setStatus('Failed to load config: '+ex.message,'err');
