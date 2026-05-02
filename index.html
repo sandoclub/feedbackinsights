@@ -129,6 +129,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 .remark-text{font-size:13px;color:var(--text);line-height:1.5}
 .remark-ratings{font-size:11px;color:var(--text3)}
 .no-remarks{font-size:13px;color:var(--text3);text-align:center;padding:20px 0}
+.rmtab{font-size:12px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--sans);transition:all .15s}
+.rmtab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bill-no{font-size:11px;color:var(--accent);margin-top:2px;font-weight:500}
 </style>
 </head>
 <body>
@@ -262,10 +265,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 <!-- REMARKS -->
 <div class="main" id="remarks-section" style="padding-top:0">
   <div class="remarks-card">
-    <div class="ch" style="margin-bottom:16px">
+    <div class="ch" style="margin-bottom:12px">
       <div class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
       <div><div class="ct">Remarks</div><div class="cs">Customer feedback — negative notes only</div></div>
     </div>
+    <div id="remarks-month-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
     <div id="remarks-list"><div class="no-remarks">No remarks for selected period.</div></div>
   </div>
 </div>
@@ -341,6 +345,7 @@ let dayMode = 'single';
 let dateA = null;          // single day OR range start
 let dateB = null;          // range end
 let actTrends = { overall:true, food:true, ambience:true, service:true };
+let remarksMonth = null; // null = most recent
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 function loadConfig(){
@@ -627,6 +632,7 @@ function parseDailyRows(rows){
     disc:    r['_disc_override']||normDisc(getCol(r,'Discovered via?','Discovered Via','Discovered via','discovered via')),
     date:    r._tabDate||null,
     remark:  getCol(r,'Remarks (only negatives)','Remarks','remarks','remark','negative','feedback')||'',
+    bill:    getCol(r,'Bill. no','Bill no','Bill No','bill no','bill number','Bill Number','Bill')||'',
   }));
 }
 
@@ -715,27 +721,59 @@ function renderAll(){
 
 function renderRemarks(daily){
   const el=document.getElementById('remarks-list');
-  const withRemarks=daily.filter(r=>r.remark&&r.remark.trim());
-  // sort by date descending
+  const tabsEl=document.getElementById('remarks-month-tabs');
+
+  // Get all daily rows with remarks across ALL months (not filtered by current view)
+  const allDaily=Object.values(allData).flatMap(d=>d.daily);
+  const allWithRemarks=allDaily.filter(r=>r.remark&&r.remark.trim());
+
+  // Build month tabs from available data
+  const months=typeof sortedMonthKeys==='function'?sortedMonthKeys():Object.keys(allData);
+  const monthsWithRemarks=months.filter(m=>allData[m].daily.some(r=>r.remark&&r.remark.trim()));
+
+  // Default to most recent month on first render
+  if(remarksMonth===null&&monthsWithRemarks.length){
+    remarksMonth=monthsWithRemarks[monthsWithRemarks.length-1];
+  }
+
+  // Render month tabs
+  tabsEl.innerHTML=['All',...monthsWithRemarks].map(m=>`
+    <button class="rmtab${(m==='All'?remarksMonth===null:remarksMonth===m)?' on':''}"
+      onclick="setRemarksMonth(${m==='All'?'null':`'${m}'`})">${m}</button>`).join('');
+
+  // Filter remarks by selected month
+  const src=remarksMonth?allData[remarksMonth].daily:allWithRemarks;
+  const withRemarks=src.filter(r=>r.remark&&r.remark.trim());
+
+  // Sort by date descending
   withRemarks.sort((a,b)=>{
     if(!a.date&&!b.date) return 0;
     if(!a.date) return 1;
     if(!b.date) return -1;
     return b.date-a.date;
   });
+
   if(!withRemarks.length){
-    el.innerHTML='<div class="no-remarks">No remarks for selected period.</div>';
+    el.innerHTML='<div class="no-remarks">No remarks for this month.</div>';
     return;
   }
+
   el.innerHTML=withRemarks.map(r=>{
     const dateStr=r.date?r.date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'Unknown date';
     const ratings=`Overall: ${r.overall} · Food: ${r.food} · Ambience: ${r.ambience} · Service: ${r.service}`;
+    const billHtml=r.bill?`<div class="bill-no">Bill #${r.bill}</div>`:'';
     return `<div class="remark-item">
       <div class="remark-date">${dateStr}</div>
       <div class="remark-text">${r.remark}</div>
+      ${billHtml}
       <div class="remark-ratings">${ratings}</div>
     </div>`;
   }).join('');
+}
+
+function setRemarksMonth(m){
+  remarksMonth=m;
+  renderRemarks();
 }
 
 function kill(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
