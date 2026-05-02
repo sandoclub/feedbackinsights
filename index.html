@@ -473,7 +473,7 @@ async function fetchTab(sid,tab){
   const rows=d.values||[];
   if(rows.length<2) return [];
   const headers=rows[0].map(h=>(h||'').trim());
-  return rows.slice(1).map(row=>{ const o={}; headers.forEach((h,i)=>o[h]=(row[i]||'').trim()); return o; });
+  return rows.slice(1).map(row=>{ const o={}; headers.forEach((h,i)=>o[h]=(row[i]||'').trim()); o['_col7']=(row[6]||'').trim(); return o; });
 }
 
 // Batch fetch ALL daily tabs in ONE API call using batchGet
@@ -500,6 +500,8 @@ async function fetchAllDailyTabs(sid,tabs){
     result[matchedTab]=rows.slice(1).map(row=>{
       const o={};
       headers.forEach((h,j)=>o[h]=(row[j]||'').trim());
+      // always store raw column G (index 6) as _col7 for bill number
+      o['_col7']=(row[6]||'').trim();
       return o;
     });
     console.log(`[batchGet] tab="${matchedTab}" rows=${rows.length-1}`);
@@ -637,7 +639,7 @@ function parseDailyRows(rows){
     disc:    r['_disc_override']||normDisc(getCol(r,'Discovered via?','Discovered Via','Discovered via','discovered via')),
     date:    r._tabDate||null,
     remark:  getCol(r,'Remarks (only negatives)','Remarks','remarks','remark','negative','feedback')||'',
-    bill:    getCol(r,'Bill. no','Bill no','Bill No','bill no','bill number','Bill Number','Bill')||'',
+    bill:    (r['_col7']&&(isNaN(Number(r['_col7']))||Number(r['_col7'])>100))?r['_col7']:getCol(r,'Bill. no','Bill no','Bill No','bill no','bill number','Bill Number','Bill')||'',
     meal:    r._meal||'Dinner',
   }));
 }
