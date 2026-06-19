@@ -752,7 +752,7 @@ function renderAll(){
 
   renderDiscBar(summary,daily);
   renderDiscTrend(summary,daily);
-  renderTrend(summary);
+  renderTrend(summary.length?summary:daily);
   const distSrc=daily.length?daily:summary;
   renderDonut('food',ratingDist(distSrc,'food'),'d-food','ll-food');
   renderDonut('ambience',ratingDist(distSrc,'ambience'),'d-amb','ll-amb');
@@ -902,19 +902,46 @@ function renderDiscTrend(summary,daily){
   });
 }
 
-function renderTrend(summary){
+function renderTrend(rows){
   kill('trend');
-  if(!summary.length) return;
+  if(!rows.length) return;
   const cols={overall:'#f0ece4',food:'#e07a5f',ambience:'#6b9080',service:'#c9a84c'};
+  // If rows have a date string (summary) use directly, else group daily by tabDate
+  let labels, dataRows;
+  if(rows[0].date!==undefined){
+    // summary rows
+    labels=rows.map(r=>r.date);
+    dataRows=rows;
+  } else {
+    // daily rows — group by date and average
+    const byDate={};
+    rows.forEach(r=>{
+      if(!r.date) return;
+      const k=r.date.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      if(!byDate[k]) byDate[k]={overall:[],food:[],ambience:[],service:[]};
+      if(r.overall>0) byDate[k].overall.push(r.overall);
+      if(r.food>0) byDate[k].food.push(r.food);
+      if(r.ambience>0) byDate[k].ambience.push(r.ambience);
+      if(r.service>0) byDate[k].service.push(r.service);
+    });
+    labels=Object.keys(byDate);
+    dataRows=labels.map(k=>({
+      date:k,
+      overall:byDate[k].overall.reduce((a,b)=>a+b,0)/(byDate[k].overall.length||1),
+      food:byDate[k].food.reduce((a,b)=>a+b,0)/(byDate[k].food.length||1),
+      ambience:byDate[k].ambience.reduce((a,b)=>a+b,0)/(byDate[k].ambience.length||1),
+      service:byDate[k].service.reduce((a,b)=>a+b,0)/(byDate[k].service.length||1),
+    }));
+  }
   const datasets=Object.keys(actTrends).filter(k=>actTrends[k]).map(k=>({
     label:k.charAt(0).toUpperCase()+k.slice(1),
-    data:summary.map(r=>r[k]>0?r[k]:null),
+    data:dataRows.map(r=>r[k]>0?parseFloat(r[k].toFixed(2)):null),
     borderColor:cols[k],backgroundColor:'transparent',
     borderWidth:1.5,pointRadius:2,tension:0.4,fill:false,spanGaps:true
   }));
   charts['trend']=new Chart(document.getElementById('c-trend'),{
     type:'line',
-    data:{labels:summary.map(r=>r.date),datasets},
+    data:{labels,datasets},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{grid:G,ticks:{...T,maxTicksLimit:12,maxRotation:45,autoSkip:true}},
               y:{min:3,max:5,grid:G,ticks:{...T,stepSize:0.5}}}}
@@ -1023,7 +1050,7 @@ function togTrend(btn){
   actTrends[k]=!actTrends[k];
   btn.classList.toggle('on',actTrends[k]);
   const{summary}=getFiltered();
-  renderTrend(summary);
+  renderTrend(summary.length?summary:daily);
 }
 
 function getShowingLabel(){
@@ -1132,9 +1159,10 @@ function renderCmpRatings(){
   const keys = ['overall','food','ambience','service'];
   const datasets = selectedMonths.map((m, mi) => {
     const d = allData[m];
+    const src = d.summary.length ? d.summary : d.daily;
     return {
       label: m,
-      data: keys.map(k => parseFloat(avg(d.summary, k).toFixed(2))),
+      data: keys.map(k => parseFloat(avg(src, k).toFixed(2))),
       backgroundColor: CMP_COLORS[mi],
       borderRadius: 4,
       borderSkipped: false,
